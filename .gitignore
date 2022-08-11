@@ -1,0 +1,15 @@
+.env
+.idea/
+.vscode/
+__pycache__/
+build/
+*.png
+code_changes.md
+dataset/
+figs/
+model_runner.bat
+output/
+results/
+test/
+to_git/
+*.bak

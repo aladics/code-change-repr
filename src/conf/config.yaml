@@ -1,0 +1,13 @@
+model_names:
+  - linear
+  - logistic
+  - adaboost
+  - forest
+  - tree
+  - knn
+  - sdnnc
+  - cdnnc
+
+hyper:
+  search_params_path: F:/work/kutatas/simbiota/to_git/common/search_params.yaml
+  n_candidates: 50
