@@ -10,6 +10,7 @@ from pathlib import Path
 import yaml
 from tqdm import tqdm
 
+
 def run_all_candidates(model_name: str, params_candidates: Dict[str, Any],
                        factory: TaskFactory, xval_path: Path) -> Tuple[float, str, List[float]]:
     best_fmes: Union[float, None] = None
@@ -31,7 +32,7 @@ def run_all_candidates(model_name: str, params_candidates: Dict[str, Any],
 
 @click.command()
 @click.option("--xval-path", "xval_path_", type=click.Path(exists=True, dir_okay=False, readable=True), required=True)
-@click.option("--result", required=True)
+@click.option("--result", required=True, type=click.Path())
 def search(xval_path_: str, result: str):
     xval_path = Path(xval_path_)
     result_path = Path(result)
