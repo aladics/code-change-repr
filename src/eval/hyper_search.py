@@ -4,6 +4,7 @@ from dbh_api.res.hyper import get_randomized_params
 from dbh_api.res.runner import TaskFactory, run_xval
 from conf.config import get as get_config
 from conf.config import Config
+from eval.metrics import Metrics
 
 import click
 from pathlib import Path
@@ -12,22 +13,22 @@ from tqdm import tqdm
 
 
 def run_all_candidates(model_name: str, params_candidates: Dict[str, Any],
-                       factory: TaskFactory, xval_path: Path) -> Tuple[float, str, List[float]]:
-    best_fmes: Union[float, None] = None
+                       factory: TaskFactory, xval_path: Path) -> Tuple[Metrics, str, List[Metrics]]:
+    best_metrics: Union[Metrics, None] = None
     best_params: Union[str, None] = None
-    fmes_values: List[float] = []
+    all_metrics: List[Metrics] = []
     for params_candidate in params_candidates:
         task = factory.get(model_name, params_candidate)
         res = run_xval(task, xval_path)
+        test_results = res['test']
 
-        fmes: float = res['test']['fmes']
-        fmes_values.append(fmes)
-        if not best_fmes or fmes > best_fmes:
-            best_fmes = fmes
+        result_metrics = Metrics(test_results['fmes'], test_results['precision'], test_results['recall'])
+        all_metrics.append(result_metrics)
+        if not best_metrics or result_metrics.fmes > best_metrics.fmes:
+            best_metrics = result_metrics
             best_params = res['strategy']
-        continue
 
-    return best_fmes, best_params, fmes_values
+    return best_metrics, best_params, all_metrics
 
 
 @click.command()
@@ -46,11 +47,11 @@ def search(xval_path_: str, result: str):
         params_candidates = get_randomized_params(model_name, config.hyper.search_params_path,
                                                   config.hyper.n_candidates)
         factory: TaskFactory = TaskFactory(config.shared_params)
-        best_fmes, best_params, all_fmes = run_all_candidates(model_name, params_candidates, factory, xval_path)
+        best_metrics, best_params, all_metrics = run_all_candidates(model_name, params_candidates, factory, xval_path)
         results[model_name] = {}
-        results[model_name]['best_fmes'] = best_fmes.item()
+        results[model_name]['best_metrics'] = best_metrics.to_dict()
         results[model_name]['best_params'] = best_params
-        results[model_name]['all_fmes'] = [el.item() for el in all_fmes]
+        results[model_name]['all_metrics'] = [metrics.to_dict() for metrics in all_metrics]
 
         with result_path.open("w") as fp:
             yaml.dump(results, fp, default_flow_style=False)
