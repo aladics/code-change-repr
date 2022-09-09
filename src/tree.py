@@ -5,7 +5,7 @@ from itertools import chain
 
 from tree_sitter import Tree, Language, Parser, Node
 
-from src.node import TreeSitterNode
+from node import TreeSitterNode
 
 
 Language.build_library(
@@ -71,21 +71,21 @@ class TreeSitterTree:
 
         return root_paths
 
-    def get_subtrees(self, type: str) -> Iterator[TreeSitterTree]:
+    def get_subtrees(self, node_type: str) -> Iterator[TreeSitterTree]:
         """Get every subtree for a specific type."""
 
         for node in self.traverse():
-            if node.type == type:
+            if node.type == node_type:
                 yield TreeSitterTree(node)
 
     def get_method_by_pos(self, line: int, col: int) -> TreeSitterTree | None:
 
         for method in chain(
-            self.get_subtrees(type="method_declaration"),
-            self.get_subtrees(type="constructor_declaration"),
+            self.get_subtrees(node_type="method_declaration"),
+            self.get_subtrees(node_type="constructor_declaration"),
         ):
             method_root: Node = method.root.node_
-            if method_root.start_point[0] <= line and line <= method_root.end_point[0]:
+            if method_root.start_point[0] <= line <= method_root.end_point[0]:
                 return TreeSitterTree(method.root)
 
 

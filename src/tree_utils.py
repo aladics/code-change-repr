@@ -2,12 +2,10 @@ from __future__ import annotations
 
 from pathlib import Path
 from typing import Union
-from src.node import Node
+from node import Node
 
 
 class TreeUtils:
-    def __init__(self, tree):
-        self.tree = tree
 
     @staticmethod
     def get_gv_repr(tree) -> str:

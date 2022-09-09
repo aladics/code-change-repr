@@ -7,8 +7,8 @@ import glob
 
 import click
 
-from src.tree import TreeSitterTree, get_sitter_AST
-from src.change_tree import ChangeTree
+from tree import TreeSitterTree, get_sitter_AST
+from  change_tree import ChangeTree
 
 logger = logging.getLogger(__name__)
 
@@ -42,11 +42,11 @@ class MethodFlattener(ABC):
     col_offset: int = 0
 
     @abstractmethod
-    def get_before() -> List[str]:
+    def get_before(self) -> List[str]:
         pass
 
     @abstractmethod
-    def get_after() -> List[str]:
+    def get_after(self) -> List[str]:
         pass
 
     def get_flatten(self, tree: Union[TreeSitterTree, ChangeTree]) -> List[str]:
@@ -69,24 +69,24 @@ class MethodFlattener(ABC):
             flattened.append(node_repr)
         return flattened
 
-    def get_repr_for_csv_entry(self, repr: Union[str, None]):
+    def get_repr_for_csv_entry(self, entry_repr: Union[str, None]):
         """Return a repr created from the parameter in a way it can be a CSV field."""
 
-        if repr == None:
-            repr = ""
+        if entry_repr is None:
+            entry_repr = ""
 
-        repr = (
-            repr.replace(",", ";")
+        entry_repr = (
+            entry_repr.replace(",", ";")
             .replace("\n", "\\n")
             .replace("\r", "\\r")
             .replace("\t", "\\t")
         )
 
-        return repr
+        return entry_repr
 
 
 class SimpleMethodFlattener(MethodFlattener):
-    def get_before(self):
+    def get_before(self) -> List[str]:
         ast = get_sitter_AST(self.before_state.filepath)
         line_pos, col_pos = (
             self.before_state.line + self.line_offset,
@@ -99,7 +99,7 @@ class SimpleMethodFlattener(MethodFlattener):
 
         return self.get_flatten(method_ast)
 
-    def get_after(self):
+    def get_after(self) -> List[str]:
         ast = get_sitter_AST(self.after_state.filepath)
         line_pos, col_pos = (
             self.after_state.line + self.line_offset,
@@ -133,7 +133,7 @@ class ChangeMethodFlattener(MethodFlattener):
 
         self.change_tree = ChangeTree(self.before, self.after)
 
-    def get_before(self):
+    def get_before(self) -> List[str]:
         if not self.change_tree:
             return []
 
@@ -141,7 +141,7 @@ class ChangeMethodFlattener(MethodFlattener):
 
         return self.get_flatten(self.change_tree)
 
-    def get_after(self):
+    def get_after(self) -> List[str]:
         if not self.change_tree:
             return []
 
@@ -219,7 +219,7 @@ def get_all_java_files_in_dir(path_to_dir: Union[str, Path]) -> Iterable[Path]:
 )
 def main(input_: str, mode: str, result: str, n_target: int, method_pos: str):
 
-    input: Path = Path(input_)
+    src_path: Path = Path(input_)
 
     n_methods = 0
     n_files = 0
@@ -227,7 +227,7 @@ def main(input_: str, mode: str, result: str, n_target: int, method_pos: str):
     if mode == "all":
         init_results(result)
         logger.info(
-            f"Flattening all methods in all java files in directory '{input}'. Target number of methods: {n_target}."
+            f"Flattening all methods in all java files in directory '{src_path}'. Target number of methods: {n_target}."
         )
 
         logger.info(f"Flattening done. Files done {n_files}, methods done {n_methods}")
@@ -242,7 +242,7 @@ def main(input_: str, mode: str, result: str, n_target: int, method_pos: str):
         # append_methods_to_results([flattened_method], result)
 
         logger.info(
-            f"Flattening done. Flattening single method in file {input} is done."
+            f"Flattening done. Flattening single method in file {src_path} is done."
         )
 
     else:

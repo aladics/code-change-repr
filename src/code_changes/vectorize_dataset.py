@@ -12,14 +12,14 @@ import numpy as np
 from urllib3 import exceptions
 from gensim.corpora import Dictionary
 
-from src.code_changes.cache import Cache
-from src.flattener import (
+from code_changes.cache import Cache
+from flattener import (
     ChangeMethodFlattener,
     MethodDefinition,
     MethodFlattener,
     SimpleMethodFlattener,
 )
-from src.doc2vec.doc2vec_train import filter_document
+from doc2vec.doc2vec_train import filter_document
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)

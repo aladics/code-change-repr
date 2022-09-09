@@ -1,8 +1,8 @@
 # from __future__ import annotations
 from typing import Iterator, List, Union
 
-from src.node import ChangeTreeNode, NodeFactory, TreeSitterNode
-from src.tree import TreeSitterTree
+from node import ChangeTreeNode, NodeFactory, TreeSitterNode
+from tree import TreeSitterTree
 
 
 class ChangeTree:
