@@ -137,7 +137,7 @@ class TreeSitterNode(Node):
             for sibling in self.parent.children:
                 if sibling.node_ == self.node_:
                     break
-                else:
+                elif sibling.type == self.type:
                     rank += 1
 
         return rank
