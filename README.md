@@ -20,7 +20,7 @@ Generating a code change dataset is done through these steps:
 ### Metrics
 Generating a dataset with metrics is done through these steps:
 1. Perform the first 3 steps of section _Code change_ to generate `xval.csv`
-2. Get SourceMeter ready, and set the path in `conf/conf.yaml`'s sourcemeter section to the directory where AnalyzerJava or the Dockerfile (TODO: upload to github) is. This directory also has to have a folder "input" and "results" (these are the folders which SM will use). 
+2. Get SourceMeter ready, and set the path in `conf/conf.yaml`'s sourcemeter section to the directory where sm_analzer.sh (script running AnalyzerJava then cleaning up the results folder) or the Dockerfile (TODO: upload to github) is. This directory also has to have a folder "input" and "results" (these are the folders which SM will use). 
 3. Run `dataset.commit_scores`
 
 ## Evaluation
