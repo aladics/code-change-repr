@@ -76,7 +76,7 @@ def run_sm(filepath: Path) -> None:
         case "windows":
             raise NotImplementedError("Windows SM runner is not implemented.")
         case "linux":
-            raise NotImplementedError("Linux SM runner is not implemented.")
+            run_sm_linux(sm_base_dir=sm_base_dir, project_id=PROJECT_ID)
         case _:
             raise ConfigException(f"Unknown config param for 'os': '{os}'")
 

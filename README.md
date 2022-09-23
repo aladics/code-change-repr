@@ -1,5 +1,8 @@
 # Code representation tools
 
+## Prerequisites
+Copy config_default.yaml to config.yaml and set the values accordingly.
+
 ## Datasets
 ### Method Embedding (Doc2Vec)
 We use Doc2Vec to embed each method. To get the used model, perform the following steps:
