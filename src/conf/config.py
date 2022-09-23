@@ -3,7 +3,7 @@ from typing import List, Union, Dict
 from pydantic import BaseModel
 import yaml
 
-CONFIG_PATH = Path(__file__).parent.resolve() / 'config_default.yaml'
+CONFIG_PATH = Path(__file__).parent.resolve() / 'config.yaml'
 
 
 class ConfigException(Exception):

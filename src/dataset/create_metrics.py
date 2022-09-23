@@ -52,7 +52,8 @@ def reset_dir(directory: Path) -> None:
     """
 
     for content in directory.rglob("*"):
-        remove(content)
+        if content.is_file():
+            remove(content)
 
 
 def run_sm(filepath: Path) -> None:
