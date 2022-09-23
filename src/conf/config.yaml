@@ -11,3 +11,9 @@ model_names:
 hyper:
   search_params_path: F:/work/kutatas/simbiota/to_git/common/search_params.yaml
   n_candidates: 50
+
+sourcemeter:
+  path: F:/work/kutatas/sm/
+
+  # Value can be of: ["windows", "linux", "independent"]
+  os: independent

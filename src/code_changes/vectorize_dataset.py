@@ -19,7 +19,7 @@ from flattener import (
     MethodFlattener,
     SimpleMethodFlattener,
 )
-from doc2vec.doc2vec_train import filter_document
+from doc2vec.train import filter_document
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -226,7 +226,7 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
 
 @click.command()
 @click.option(
-    "--input",
+    "--input", "src",
     type=click.Path(exists=True, dir_okay=False),
     help="Path to the CSV file containing the method changes.",
     required=True,
@@ -280,7 +280,7 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
     "--reset/--no-reset", help="If the results file should be reset", default=False
 )
 def main(
-    input: str,
+    src: str,
     result: str,
     cache_dir: str,
     doc2vec_path: str,
@@ -306,7 +306,7 @@ def main(
     n_unchanged: int = 0
     time_start = time.time()
     elapsed: int = 0
-    with Path(input).open() as fp:
+    with Path(src).open() as fp:
         header_read = False
         line = fp.readline()
         ignore_methods = get_ignore_methods(ignore_methods_path)
@@ -366,12 +366,14 @@ def main(
 
             elapsed: int = int(time.time() - time_start)
             print(
-                f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5}, unchanged: {n_unchanged:5}, failed: {n_failed:5}, elapsed time : {get_elapsed(elapsed)}",
+                (f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5}, "
+                 f"unchanged: {n_unchanged:5}, failed: {n_failed:5}, elapsed time : {get_elapsed(elapsed)}"),
                 end="\r",
             )
 
     print(
-        f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5},  unchanged: {n_unchanged:5}, failed: {n_failed:5}, elapsed time : {get_elapsed(elapsed)}"
+        f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5}," 
+        f"unchanged: {n_unchanged:5}, failed: {n_failed:5}, elapsed time : {get_elapsed(elapsed)}"
     )
 
 

@@ -8,7 +8,8 @@ import glob
 import click
 
 from tree import TreeSitterTree, get_sitter_AST
-from  change_tree import ChangeTree
+from change_tree import ChangeTree
+from util.models import MethodDefinition
 
 logger = logging.getLogger(__name__)
 
@@ -17,21 +18,6 @@ logging.basicConfig(
     format="[%(levelname)s | %(asctime)s] %(message)s",
     datefmt="%Y/%d/%m %H:%M",
 )
-
-
-@dataclass
-class MethodDefinition:
-    repo: str
-    sha: str
-    filepath: Path
-    pos: str
-    line: int = field(init=False)
-    col: int = field(init=False)
-
-    def __post_init__(self):
-        positions = self.pos.split(":")
-        self.line = int(positions[0])
-        self.col = int(positions[1])
 
 
 @dataclass

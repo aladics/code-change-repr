@@ -50,8 +50,9 @@ def create_train_set(
     positive_file: str, n_positives: int, negative_file: str, p_n_ratio: float
 ) -> Tuple[List[Any], List[Any], List[Any]]:
     """
-    Create train set by sampling the positive entries :param n_positives times, and sampling negative samples to keep the ratio given by :param p_n_ratio.
-    Return the created train set and the leftover entries of the positive and negative sets.
+    Create train set by sampling the positive entries :param n_positives times, and sampling negative samples to keep
+    the ratio given by :param p_n_ratio. Return the created train set and the leftover entries of the positive and
+    negative sets.
     """
     train_set = []
 
@@ -78,7 +79,8 @@ def create_test_set(
     positive_leftovers: List[Any], negative_leftovers: List[Any], p_n_ratio: float
 ):
     """
-    Create test set where the positive entries are :param positive_leftovers, and negative entries are sampled from the negative leftover set while keeping the ratio given by :param p_n_ratio.
+    Create test set where the positive entries are :param positive_leftovers, and negative entries are sampled from
+    the negative leftover set while keeping the ratio given by :param p_n_ratio.
 
     Returns the test set.
     """
@@ -126,7 +128,8 @@ def dump_data(fname: str, dataset: List[Any]) -> None:
 @click.option(
     "--n-positives",
     type=int,
-    help="The number of positive entries in the train set, the rest will go to test set. Set to -1 if you want to keep everything in case of mode 'xval'.",
+    help="The number of positive entries in the train set, the rest will go to test set. Set to -1 if you want to "
+         "keep everything in case of mode 'xval'.",
     required=True,
 )
 @click.option(

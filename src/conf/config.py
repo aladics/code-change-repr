@@ -6,6 +6,15 @@ import yaml
 CONFIG_PATH = Path(__file__).parent.resolve() / 'config.yaml'
 
 
+class ConfigException(Exception):
+    pass
+
+
+class SourceMeter(BaseModel):
+    path: Path
+    os: str
+
+
 class Hyper(BaseModel):
     search_params_path: Path
     n_candidates: int
@@ -14,6 +23,7 @@ class Hyper(BaseModel):
 class Config(BaseModel):
     model_names: List[str]
     hyper: Hyper
+    sourcemeter: SourceMeter
     shared_params: Dict[str, Union[str, int, bool]] = {
         "label": "label",
         "resample": "up",

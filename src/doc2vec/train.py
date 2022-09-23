@@ -19,7 +19,8 @@ def filter_document(document: List[str], dictionary: Dictionary) -> List[str]:
 
 
 class Corpus:
-    """Corpus created from a csv file, words are separated by commas, filtered using a dictionary prepared on the same file."""
+    """Corpus created from a csv file, words are separated by commas, filtered using a dictionary prepared on the
+    same file. """
 
     def filter_document(self, document: List[str]) -> List[str]:
         filtered_doc = self.dictionary.doc2idx(document=document, unknown_word_index=-1)
