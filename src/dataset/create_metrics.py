@@ -34,7 +34,7 @@ def run_sm_linux(sm_base_dir: str, project_id: str):
     Run SM natively on linux.
     """
 
-    run(["./sm_analyzer.sh", f"-projectName={project_id}", "-projectBaseDir=input", "-resultsDir=results"],
+    run(["./sm_analyzer.sh", project_id],
         cwd=sm_base_dir, stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
 
 
