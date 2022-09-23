@@ -14,5 +14,11 @@ Generating a code change dataset is done through these steps:
 3. Using `code_changes.create_dataset` create the xval dataset `xval.csv` using `all_method_changes.csv` as negative set (the script will remove duplicates) and `vulnerabilities.csv` as positive set. 
 4. Using `code_changes.vectorize_dataset` vectorize the methods referenced in `xval.csv`. Use option `--mode` to generate _Simple_ and _ChangeTree_ representation
 
+### Metrics
+Generating a dataset with metrics is done through these steps:
+1. Perform the first 3 steps of section _Code change_ to generate `xval.csv`
+2. Get SourceMeter ready, and set the path in `conf/conf.yaml`'s sourcemeter section to the directory where AnalyzerJava or the Dockerfile (TODO: upload to github) is. This directory also has to have a folder "input" and "results" (these are the folders which SM will use). 
+3. Run `dataset.commit_scores`
+
 ## Evaluation
 Using `eval.hyper_search`, with a source file `xval.csv` we can hyper tune the DWF models and get the best model's performance in f-mes, precision and recall. Configurations can be found in `conf/conf.yaml`.
