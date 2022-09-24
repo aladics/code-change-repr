@@ -9,11 +9,14 @@ model_names:
   - cdnnc
 
 hyper:
-  search_params_path: F:/work/kutatas/simbiota/to_git/common/search_params.yaml
+  search_params_path: <search parameters path>
   n_candidates: 50
 
 sourcemeter:
-  path: F:/work/kutatas/sm/
+  path: <SM path>
 
   # Value can be of: ["windows", "linux", "independent"]
   os: independent
+
+  # txt file
+  err_log: <error_log_path>

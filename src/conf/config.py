@@ -13,6 +13,7 @@ class ConfigException(Exception):
 class SourceMeter(BaseModel):
     path: Path
     os: str
+    err_log: Path
 
 
 class Hyper(BaseModel):

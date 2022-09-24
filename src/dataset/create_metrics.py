@@ -118,11 +118,14 @@ def get_sm_metrics(method: MethodDefinition) -> List[str]:
     run_sm(method.filepath)
 
     result_dir_path = get_config().sourcemeter.path / OUTPUT_SUBDIR
-    metrics_csv_path: Path = get_metrics_csv(result_dir_path, PROJECT_ID)
+    try:
+        metrics_csv_path: Path = get_metrics_csv(result_dir_path, PROJECT_ID)
+    except MetricsFileException as ex:
+        raise MetricsFileException(f"{method.filepath}, {method.sha}, {ex}")
     return get_metrics_from_csv(metrics_csv_path, method)
 
 
-def get_concatenated_metrics(ch_method: ChangedMethodEntry):
+def get_concatenated_metrics(ch_method: ChangedMethodEntry) -> List[str]:
     """
     Fetch the metrics for both before and after states of the changed method, return them concatenated
     """
@@ -149,17 +152,22 @@ def init_result(result_path: Path, reinit: bool) -> None:
             fp.write(",".join(get_result_header()) + "\n")
 
 
-def append_to_results(metrics: List[str], label: int, result_path):
+def append_to_results(metrics: List[str], label: int, result_path) -> None:
     with result_path.open("a") as fp:
         fp.write(",".join(metrics + [str(label)]) + "\n")
 
 
-def get_n_lines(path: Path):
+def get_n_lines(path: Path) -> int:
     fp = open(path)
     n_lines = sum(1 for _ in fp)
     fp.close()
 
     return n_lines
+
+
+def append_to_error_log(msg: str) -> None:
+    with get_config().sourcemeter.err_log.open("a") as fp:
+        fp.write(f"{msg}\n")
 
 
 @click.command()
@@ -185,10 +193,14 @@ def main(src: str, cache_dir: str, result_path_str: str, reinit: bool):
                     is_header_read = True
                     continue
 
-                ch_method: ChangedMethodEntry = ChangedMethodEntry.from_csv_line(line, cache)
-                ch_metrics: List[str] = get_concatenated_metrics(ch_method)
-                append_to_results(ch_metrics, ch_method.label, result_path)
-                pbar.update(1)
+                try:
+                    ch_method: ChangedMethodEntry = ChangedMethodEntry.from_csv_line(line, cache)
+                    ch_metrics: List[str] = get_concatenated_metrics(ch_method)
+                    append_to_results(ch_metrics, ch_method.label, result_path)
+                    pbar.update(1)
+                except MetricsFileException as ex:
+                    append_to_error_log(str(ex))
+                    continue
 
 
 if __name__ == '__main__':
