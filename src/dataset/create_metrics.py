@@ -28,6 +28,8 @@ PROJECT_ID = "placeholder"
 class MetricsFileException(Exception):
     pass
 
+class MethodNotFoundException(Exception):
+    pass
 
 def run_sm_linux(sm_base_dir: str, project_id: str):
     """
@@ -42,8 +44,7 @@ def run_sm_os_independently(sm_base_dir: str, project_id: str):
     """
     Run SM using docker. Build the image manually before using this!
     """
-    run(["docker-compose", "run", "-e", f"PROJECT_ID={project_id}", "sourcemeter"], cwd=sm_base_dir,
-        stdout=subprocess.DEVNULL, stderr=subprocess.STDOUT)
+    run(["docker-compose", "run", "-e", f"PROJECT_ID={project_id}", "sourcemeter"], cwd=sm_base_dir)
 
 
 def reset_dir(directory: Path) -> None:
@@ -101,13 +102,21 @@ def get_metrics_from_csv(metrics_csv_path: Path, method: MethodDefinition) -> Li
     Fetch the metrics corresponding to a method from a metrics CSV.
     """
 
+    metrics = []
+
     with metrics_csv_path.open() as csv_file:
         reader = DictReader(csv_file)
         for row in reader:
             if not int(row[METHOD_LINE_FIELD_NAME]) == method.line:
                 continue
 
-            return list(row.values())[METRICS_START_IDX:METRICS_END_IDX + 1]
+            metrics = list(row.values())[METRICS_START_IDX:METRICS_END_IDX + 1]
+            break
+
+    if len(metrics) == 0:
+        raise MethodNotFoundException(f"{method.filepath}, {method.sha}, Method not found after SM run.")
+
+    return metrics
 
 
 def get_sm_metrics(method: MethodDefinition) -> List[str]:
@@ -137,7 +146,7 @@ def get_concatenated_metrics(ch_method: ChangedMethodEntry) -> List[str]:
 
 def get_result_header() -> List[str]:
     header = []
-    header += [f"feature_{field_n}" for field_n in range(0, (METRICS_END_IDX-METRICS_START_IDX+1)*2)]
+    header += [f"feature_{field_n}" for field_n in range(0, (METRICS_END_IDX - METRICS_START_IDX + 1) * 2)]
     header += ["label"]
 
     return header
@@ -175,9 +184,10 @@ def append_to_error_log(msg: str) -> None:
               required=True)
 @click.option("--cache-dir", type=click.Path(file_okay=False, exists=True, readable=True),
               help="The directory containing the cache.", required=True)
-@click.option("--result", "result_path_str",  type=click.Path(), help="Path to the result csv", required=True)
+@click.option("--result", "result_path_str", type=click.Path(), help="Path to the result csv", required=True)
 @click.option("--reinit/--no-reinit", default=False, help="Set if results should be reinitialized.")
-def main(src: str, cache_dir: str, result_path_str: str, reinit: bool):
+@click.option("--skip-n", type=int, default=0, help="Set to skip first n entries in the source.")
+def main(src: str, cache_dir: str, result_path_str: str, reinit: bool, skip_n: int):
     result_path = Path(result_path_str)
     src_path = Path(src)
     init_result(result_path, reinit)
@@ -186,11 +196,18 @@ def main(src: str, cache_dir: str, result_path_str: str, reinit: bool):
     is_header_read: bool = False
     n_lines = get_n_lines(src_path)
 
+    line_idx = 0
+
     with src_path.open("r") as fp:
         with tqdm(total=n_lines) as pbar:
             while line := fp.readline():
                 if not is_header_read:
                     is_header_read = True
+                    continue
+
+                if line_idx < skip_n:
+                    line_idx += 1
+                    pbar.update(1)
                     continue
 
                 try:
@@ -201,6 +218,8 @@ def main(src: str, cache_dir: str, result_path_str: str, reinit: bool):
                 except MetricsFileException as ex:
                     append_to_error_log(str(ex))
                     continue
+                except MethodNotFoundException as ex:
+                    append_to_error_log(str(ex))
 
 
 if __name__ == '__main__':
