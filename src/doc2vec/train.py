@@ -6,7 +6,7 @@ import click
 from gensim.corpora import Dictionary
 from gensim.models import doc2vec
 
-from src.doc2vec.create_dictionary import preprocess_csv_line
+from doc2vec.create_dictionary import preprocess_csv_line
 
 
 def filter_document(document: List[str], dictionary: Dictionary) -> List[str]:
@@ -36,9 +36,9 @@ class Corpus:
 
         return document
 
-    def __init__(self, corpus_path: str, dictonary: Dictionary):
+    def __init__(self, corpus_path: str, dictionary: Dictionary):
         self.corpus = Path(corpus_path)
-        self.dictionary = dictonary
+        self.dictionary = dictionary
 
     def __iter__(self):
         with self.corpus.open() as fp:
