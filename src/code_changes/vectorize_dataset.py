@@ -233,7 +233,7 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
 )
 @click.option(
     "--result",
-    help="Path to where the resulting flattened method chanes should be stored.",
+    help="Path to where the resulting flattened method changes should be stored.",
     required=True,
 )
 @click.option(

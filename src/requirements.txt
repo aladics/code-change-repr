@@ -6,3 +6,4 @@ PyYAML==6.0
 requests==2.28.1
 tqdm==4.64.1
 urllib3==1.26.12
+tree_sitter==0.20.1

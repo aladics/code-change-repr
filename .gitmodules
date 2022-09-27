@@ -1,0 +1,3 @@
+[submodule "src/vendor/tree-sitter-java"]
+	path = src/vendor/tree-sitter-java
+	url = https://github.com/tree-sitter/tree-sitter-java
