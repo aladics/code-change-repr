@@ -60,7 +60,7 @@ def download_file(url: str, dst_path: Path):
 
 
 def get_cached_file(
-    rel_path: str, url: str, cache: Cache, is_before: bool
+        rel_path: str, url: str, cache: Cache, is_before: bool
 ) -> Union[Path, None]:
     """
     Get file from cache if cached, download otherwise.
@@ -76,15 +76,14 @@ def get_cached_file(
 
 
 def vectorize_flattening(
-    flattened_method: List[str], doc2vec_model: Doc2Vec
+        flattened_method: List[str], doc2vec_model: Doc2Vec
 ) -> np.ndarray:
-
     doc2vec_model.random.seed(doc2vec_model.seed)  # type: ignore
     return doc2vec_model.infer_vector(flattened_method)
 
 
 def append_to_results(
-    before_flatten: np.ndarray, after_flatten: np.ndarray, label: str, result_path: Path
+        before_flatten: np.ndarray, after_flatten: np.ndarray, label: str, result_path: Path
 ):
     with result_path.open("a") as fp:
         fp.write(",".join(f"{el:.5f}" for el in before_flatten.tolist()) + ",")
@@ -94,7 +93,7 @@ def append_to_results(
 
 
 def parse_methods_from_csv_line(
-    line: str, cache: Cache
+        line: str, cache: Cache
 ) -> Tuple[MethodDefinition, MethodDefinition, str]:
     fields: List[str] = line.split(",")
     (
@@ -140,32 +139,40 @@ def parse_methods_from_csv_line(
 
 
 def is_ignore_method(
-    ignore_methods: List[str],
-    before_state: MethodDefinition,
-    after_state: MethodDefinition,
+        ignore_methods: List[str],
+        before_state: MethodDefinition,
+        after_state: MethodDefinition,
 ) -> bool:
     for method_to_ignore in ignore_methods:
         fields = method_to_ignore.split(",")
         if (
-            fields[0].strip() == before_state.repo
-            and fields[1].strip() == before_state.sha
-            and fields[2].strip() == after_state.sha
-            and fields[3].strip() == before_state.pos
-            and fields[4].strip() == after_state.pos
+                fields[0].strip() == before_state.repo
+                and fields[1].strip() == before_state.sha
+                and fields[2].strip() == after_state.sha
+                and fields[3].strip() == before_state.pos
+                and fields[4].strip() == after_state.pos
         ):
             return True
 
     return False
 
 
-def vectorize_method(
-    method_flattener: MethodFlattener,
-    label: str,
-    result_path: Path,
-    model: Doc2Vec,
-    dictionary: Dictionary,
-) -> None:
+def get_done_log_path(result_path: Path) -> Path:
+    return result_path.parent / (result_path.stem + "_done.log")
 
+
+def append_to_done_log(before_state: MethodDefinition, after_state: MethodDefinition, path: Path):
+    with path.open("a") as fp:
+        fp.write(f"{before_state.sha},{before_state.filepath},{after_state.sha},{after_state.filepath}\n")
+
+
+def vectorize_method(
+        method_flattener: MethodFlattener,
+        label: str,
+        result_path: Path,
+        model: Doc2Vec,
+        dictionary: Dictionary,
+) -> None:
     flattened_before_method = filter_document(method_flattener.get_before(), dictionary)
     flattened_after_method = filter_document(method_flattener.get_after(), dictionary)
 
@@ -177,6 +184,7 @@ def vectorize_method(
     vectorized_before = vectorize_flattening(flattened_before_method, model)
     vectorized_after = vectorize_flattening(flattened_after_method, model)
     append_to_results(vectorized_before, vectorized_after, label, result_path)
+    append_to_done_log(method_flattener.before_state, method_flattener.after_state, get_done_log_path(result_path))
 
 
 def get_elapsed(elapsed_secs: int) -> str:
@@ -204,9 +212,8 @@ def dump_unchanged_method(method_flattener: MethodFlattener, result_path: Path):
 
 
 def dump_unchanged(
-    method_flattener: MethodFlattener, dictionary: Dictionary, result_path: Path
+        method_flattener: MethodFlattener, dictionary: Dictionary, result_path: Path
 ):
-
     flattened_before_method = filter_document(method_flattener.get_before(), dictionary)
     flattened_after_method = filter_document(method_flattener.get_after(), dictionary)
 
@@ -280,21 +287,25 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
     "--reset/--no-reset", help="If the results file should be reset", default=False
 )
 def main(
-    src: str,
-    result: str,
-    cache_dir: str,
-    doc2vec_path: str,
-    mode: Mode,
-    dict_path: str,
-    ignore_methods_path: Union[str, None],
-    skip_n: int,
-    reset: bool,
+        src: str,
+        result: str,
+        cache_dir: str,
+        doc2vec_path: str,
+        mode: Mode,
+        dict_path: str,
+        ignore_methods_path: Union[str, None],
+        skip_n: int,
+        reset: bool,
 ):
     cache = Cache(Path(cache_dir))
     result_path = Path(result)
+    done_log_path = get_done_log_path(result_path)
 
-    if result_path.exists() and reset:
-        result_path.unlink()
+    if reset:
+        if result_path.exists():
+            result_path.unlink()
+        if done_log_path.exists():
+            done_log_path.unlink()
 
     model: Doc2Vec = Doc2Vec.load(doc2vec_path)
     dictionary: Dictionary = Dictionary.load(dict_path)
@@ -372,7 +383,7 @@ def main(
             )
 
     print(
-        f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5}," 
+        f"Done methods: {n_done:5}, ignored: {n_ignored:5}, skipped: {n_skipped:5},"
         f"unchanged: {n_unchanged:5}, failed: {n_failed:5}, elapsed time : {get_elapsed(elapsed)}"
     )
 
