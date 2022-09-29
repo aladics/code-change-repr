@@ -163,7 +163,9 @@ def get_done_log_path(result_path: Path) -> Path:
 
 def append_to_done_log(before_state: MethodDefinition, after_state: MethodDefinition, path: Path):
     with path.open("a") as fp:
-        fp.write(f"{before_state.sha},{before_state.filepath},{after_state.sha},{after_state.filepath}\n")
+        fp.write(
+            f'{before_state.sha},{before_state.filepath},{before_state.line},{after_state.sha},{after_state.filepath},'
+            f'{after_state.line}\n')
 
 
 def vectorize_method(
@@ -172,11 +174,12 @@ def vectorize_method(
         result_path: Path,
         model: Doc2Vec,
         dictionary: Dictionary,
+        skip_unchanged: bool
 ) -> None:
     flattened_before_method = filter_document(method_flattener.get_before(), dictionary)
     flattened_after_method = filter_document(method_flattener.get_after(), dictionary)
 
-    if flattened_before_method == flattened_after_method:
+    if skip_unchanged and flattened_before_method == flattened_after_method:
         raise MethodUnchangedException(
             f"Before or the after flattenings are the same for a method."
         )
@@ -286,6 +289,7 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
 @click.option(
     "--reset/--no-reset", help="If the results file should be reset", default=False
 )
+@click.option("--skip-unchanged/--dont-skip-unchanged", help="Set if unchanged methods should be skipped.", default=False)
 def main(
         src: str,
         result: str,
@@ -296,6 +300,7 @@ def main(
         ignore_methods_path: Union[str, None],
         skip_n: int,
         reset: bool,
+        skip_unchanged: bool
 ):
     cache = Cache(Path(cache_dir))
     result_path = Path(result)
@@ -351,7 +356,7 @@ def main(
                         )
 
                     vectorize_method(
-                        method_flattener, label, result_path, model, dictionary
+                        method_flattener, label, result_path, model, dictionary, skip_unchanged
                     )
 
                 elif mode == mode.DUMP_UNCHANGED:
