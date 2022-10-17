@@ -241,13 +241,14 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
     return ignore_methods
 
 
-def append_to_flatten_log(flattened_method: List[str], method: MethodDefinition, log_file_path: Path) -> None:
+def append_to_flatten_log(flattened_method: List[str], method: MethodDefinition, log_file_path: Path, repr_mode: str) -> None:
     vec_log = [{
         'repo': method.repo,
         'sha': method.sha,
         'filepath': str(method.filepath.resolve()),
         'line': method.line,
-        "n_tokens": len(flattened_method)
+        'n_tokens': len(flattened_method),
+        'repr': repr_mode
     }]
 
     log_file_path.parent.mkdir(exist_ok=True, parents=True)
@@ -378,8 +379,8 @@ def main(
                         )
 
                     flattened_before, flattened_after = flatten_method(method_flattener, dictionary, skip_unchanged)
-                    append_to_flatten_log(flattened_before, before_method, config.flatten_log_file)
-                    append_to_flatten_log(flattened_after, after_method, config.flatten_log_file)
+                    append_to_flatten_log(flattened_before, before_method, config.flatten_log_file, mode)
+                    append_to_flatten_log(flattened_after, after_method, config.flatten_log_file, mode)
 
                     vectorized_before, vectorized_after = vectorize_method(flattened_before, flattened_after, model)
                     append_to_results(vectorized_before, vectorized_after, label, result_path)
