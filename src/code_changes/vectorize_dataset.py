@@ -241,14 +241,14 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
     return ignore_methods
 
 
-def append_to_flatten_log(flattened_method: List[str], method: MethodDefinition, log_file_path: Path, repr_mode: str) -> None:
+def append_to_flatten_log(flattened_method: List[str], method: MethodDefinition, log_file_path: Path, repr_mode: Mode) -> None:
     vec_log = [{
         'repo': method.repo,
         'sha': method.sha,
         'filepath': str(method.filepath.resolve()),
         'line': method.line,
         'n_tokens': len(flattened_method),
-        'repr': repr_mode
+        'repr': str(repr_mode)
     }]
 
     log_file_path.parent.mkdir(exist_ok=True, parents=True)
