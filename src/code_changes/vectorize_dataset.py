@@ -1,6 +1,7 @@
 from typing import List, Tuple, Union
 from pathlib import Path
 import requests
+import yaml
 from requests.adapters import HTTPAdapter, Retry
 import logging
 from enum import Enum
@@ -20,6 +21,9 @@ from flattener import (
     SimpleMethodFlattener,
 )
 from doc2vec.train import filter_document
+from conf.config import get as get_config
+from conf.config import Config
+
 
 logging.getLogger("requests").setLevel(logging.WARNING)
 logging.getLogger("urllib3").setLevel(logging.WARNING)
@@ -168,14 +172,8 @@ def append_to_done_log(before_state: MethodDefinition, after_state: MethodDefini
             f'{after_state.line}\n')
 
 
-def vectorize_method(
-        method_flattener: MethodFlattener,
-        label: str,
-        result_path: Path,
-        model: Doc2Vec,
-        dictionary: Dictionary,
-        skip_unchanged: bool
-) -> None:
+def flatten_method(method_flattener: MethodFlattener, dictionary: Dictionary, skip_unchanged: bool) -> \
+        Tuple[List[str], List[str]]:
     flattened_before_method = filter_document(method_flattener.get_before(), dictionary)
     flattened_after_method = filter_document(method_flattener.get_after(), dictionary)
 
@@ -184,10 +182,19 @@ def vectorize_method(
             f"Before or the after flattenings are the same for a method."
         )
 
+    return flattened_before_method, flattened_after_method
+
+
+def vectorize_method(
+        flattened_before_method: List[str],
+        flattened_after_method: List[str],
+        model: Doc2Vec,
+) -> Tuple[List[str], List[str]]:
+
     vectorized_before = vectorize_flattening(flattened_before_method, model)
     vectorized_after = vectorize_flattening(flattened_after_method, model)
-    append_to_results(vectorized_before, vectorized_after, label, result_path)
-    append_to_done_log(method_flattener.before_state, method_flattener.after_state, get_done_log_path(result_path))
+
+    return vectorized_before, vectorized_after
 
 
 def get_elapsed(elapsed_secs: int) -> str:
@@ -232,6 +239,20 @@ def get_ignore_methods(ignore_methods_path: Union[str, None]) -> List[str]:
         ignore_methods = fp.readlines()
 
     return ignore_methods
+
+
+def append_to_flatten_log(flattened_method: List[str], method: MethodDefinition, log_file_path: Path) -> None:
+    vec_log = {
+        'repo': method.repo,
+        'sha': method.sha,
+        'filepath': str(method.filepath.resolve()),
+        'line': method.line,
+        "n_tokens": len(flattened_method)
+    }
+
+    log_file_path.parent.mkdir(exist_ok=True, parents=True)
+    with log_file_path.open("a") as fp:
+        yaml.safe_dump(vec_log, fp)
 
 
 @click.command()
@@ -305,6 +326,7 @@ def main(
     cache = Cache(Path(cache_dir))
     result_path = Path(result)
     done_log_path = get_done_log_path(result_path)
+    config : Config = get_config()
 
     if reset:
         if result_path.exists():
@@ -355,9 +377,14 @@ def main(
                             before_method, after_method, line_offset=-1
                         )
 
-                    vectorize_method(
-                        method_flattener, label, result_path, model, dictionary, skip_unchanged
-                    )
+                    flattened_before, flattened_after = flatten_method(method_flattener, dictionary, skip_unchanged)
+                    append_to_flatten_log(flattened_before, before_method, config.flatten_log_file)
+                    append_to_flatten_log(flattened_after, after_method, config.flatten_log_file)
+
+                    vectorized_before, vectorized_after = vectorize_method(flattened_before, flattened_after, model)
+                    append_to_results(vectorized_before, vectorized_after, label, result_path)
+                    append_to_done_log(method_flattener.before_state, method_flattener.after_state,
+                                       get_done_log_path(result_path))
 
                 elif mode == mode.DUMP_UNCHANGED:
                     method_flattener = SimpleMethodFlattener(

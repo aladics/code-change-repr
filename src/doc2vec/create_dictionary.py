@@ -86,7 +86,7 @@ def main(corpus: str, save_fname: str):
             )
 
     logger.info(
-        f"Dictionary is created with {dictionary.num_docs} documents (methods) processed and has {len(dictionary)} unique words (tokens)."
+        f"Dictionary is created with {dictionary.num_docs} documents (methods) processed and has {len(dictionary)} unique words (tokens). "
     )
 
     remove_extremes(dictionary)

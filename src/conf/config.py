@@ -25,6 +25,8 @@ class Config(BaseModel):
     model_names: List[str]
     hyper: Hyper
     sourcemeter: SourceMeter
+    flatten_log_file: Path
+
     shared_params: Dict[str, Union[str, int, bool]] = {
         "label": "label",
         "resample": "up",

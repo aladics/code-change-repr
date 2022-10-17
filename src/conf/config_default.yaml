@@ -20,3 +20,5 @@ sourcemeter:
 
   # txt file
   err_log: <error_log_path>
+
+flatten_log_file: <flatten_log_file_path>
